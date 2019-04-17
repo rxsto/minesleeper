@@ -1,0 +1,8 @@
+name: MineSleeper
+version: 1.0
+main: me.rxsto.minesleeper.MineSleeper
+description: Enables you and your friends to skip nights without having everyone to sleep.
+api-version: 1.13
+author: Rxsto
+website: https://rxsto.me
+prefix: MineSleeper

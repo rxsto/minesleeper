@@ -1,0 +1,19 @@
+#  __  __  _               ____   _
+# |  \/  |(_) _ __    ___ / ___| | |  ___   ___  _ __    ___  _ __
+# | |\/| || || '_ \  / _ \\___ \ | | / _ \ / _ \| '_ \  / _ \| '__|
+# | |  | || || | | ||  __/ ___) || ||  __/|  __/| |_) ||  __/| |
+# |_|  |_||_||_| |_| \___||____/ |_| \___| \___|| .__/  \___||_|
+#                                               |_|
+
+# Indicates whether sleeping should clear the weather or not
+clearWeather: false
+
+# Creates a list from which the plugin will randomly choose a message
+sleepMessages:
+  - §e%s §fwent to bed. Sleep well.
+  - §e%s §fhad a long day. Good night.
+
+# The amount of players in percent that need to sleep in order to skip the night.
+# For example 0.5 would be 50%, which means at least 5 players need to sleep.
+# Minimum is 0, means a single player can skip, maximum is 1, means every player needs to sleep.
+playerCount: 0.5
