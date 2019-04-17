@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class SleepListener implements Listener {
@@ -19,17 +20,15 @@ public class SleepListener implements Listener {
     @SuppressWarnings({"unused", "IntegerDivisionInFloatingPointContext"})
     @EventHandler
     public void onPlayerEnterBed(PlayerBedEnterEvent event) {
-        MineSleeper.getInstance().getLogger().info(event.getPlayer() + "");
-        MineSleeper.getInstance().sleepingPlayer.add(event.getPlayer());
-        MineSleeper.getInstance().getLogger().info("test");
+        MineSleeper.getInstance().addSleepingPlayer(event.getPlayer().getUniqueId());
         if (event.getBedEnterResult() == PlayerBedEnterEvent.BedEnterResult.OK) {
-            if (MineSleeper.getInstance().getConfig().getInt("playerCount") == 1) {
+            if (MineSleeper.getInstance().getConfig().getDouble("playerCount") == 0) {
                 event.getPlayer().getWorld().getPlayers().forEach(player -> player.sendMessage(String.format(MineSleeper.getInstance().getSleepMessage(), event.getPlayer().getName())));
-                executeSkip(event);
+                MineSleeper.getInstance().addSleepingFuture(event.getPlayer().getUniqueId(), executeSkip(event));
             } else {
-                event.getPlayer().getWorld().getPlayers().forEach(player -> player.sendMessage(String.format("%s | %s/%s", String.format(MineSleeper.getInstance().getSleepMessage(), event.getPlayer().getName()), MineSleeper.getInstance().sleepingPlayer.size(), event.getPlayer().getWorld().getPlayers().size() * MineSleeper.getInstance().getConfig().getDouble("playerCount"))));
-                if (MineSleeper.getInstance().sleepingPlayer.size() / event.getPlayer().getWorld().getPlayers().size() >= MineSleeper.getInstance().getConfig().getDouble("sleepingCount")) {
-                    executeSkip(event);
+                event.getPlayer().getWorld().getPlayers().forEach(player -> player.sendMessage(String.format("%s §7| §f%s/%s", String.format(MineSleeper.getInstance().getSleepMessage(), event.getPlayer().getName()), MineSleeper.getInstance().getSleepingPlayerSize(), Math.round(Math.ceil(event.getPlayer().getWorld().getPlayers().size() * MineSleeper.getInstance().getConfig().getDouble("playerCount"))))));
+                if (MineSleeper.getInstance().getSleepingPlayerSize() / event.getPlayer().getWorld().getPlayers().size() >= MineSleeper.getInstance().getConfig().getDouble("sleepingCount")) {
+                    MineSleeper.getInstance().addSleepingFuture(event.getPlayer().getUniqueId(), executeSkip(event));
                 }
             }
         }
@@ -38,23 +37,29 @@ public class SleepListener implements Listener {
     @SuppressWarnings("unused")
     @EventHandler
     public void onPlayerLeaveBed(PlayerBedLeaveEvent event) {
-        MineSleeper.getInstance().sleepingPlayer.remove(event.getPlayer());
+        if (!MineSleeper.getInstance().getSleepingFuture(event.getPlayer().getUniqueId()).isDone())
+            MineSleeper.getInstance().cancelSleepingFuture(event.getPlayer().getUniqueId());
+        MineSleeper.getInstance().removeSleepingPlayer(event.getPlayer().getUniqueId());
     }
 
     @SuppressWarnings("unused")
     @EventHandler
     public void onPlayerKickedFromServer(PlayerKickEvent event) {
-        MineSleeper.getInstance().sleepingPlayer.remove(event.getPlayer());
+        if (!MineSleeper.getInstance().getSleepingFuture(event.getPlayer().getUniqueId()).isDone())
+            MineSleeper.getInstance().cancelSleepingFuture(event.getPlayer().getUniqueId());
+        MineSleeper.getInstance().removeSleepingPlayer(event.getPlayer().getUniqueId());
     }
 
     @SuppressWarnings("unused")
     @EventHandler
     public void onPlayerLeaveServer(PlayerQuitEvent event) {
-        MineSleeper.getInstance().sleepingPlayer.remove(event.getPlayer());
+        if (!MineSleeper.getInstance().getSleepingFuture(event.getPlayer().getUniqueId()).isDone())
+            MineSleeper.getInstance().cancelSleepingFuture(event.getPlayer().getUniqueId());
+        MineSleeper.getInstance().removeSleepingPlayer(event.getPlayer().getUniqueId());
     }
 
-    private void executeSkip(PlayerBedEnterEvent event) {
-        Runnable runnableTask = () -> {
+    private Future executeSkip(PlayerBedEnterEvent event) {
+        return executorService.submit(() -> {
             try {
                 TimeUnit.MILLISECONDS.sleep(5000);
                 event.getPlayer().getWorld().setTime(4000);
@@ -65,8 +70,6 @@ public class SleepListener implements Listener {
             } catch (InterruptedException e) {
                 MineSleeper.getInstance().getLogger().warning(e.getLocalizedMessage());
             }
-        };
-
-        executorService.execute(runnableTask);
+        });
     }
 }
