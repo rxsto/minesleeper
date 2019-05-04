@@ -8,12 +8,34 @@
 # Indicates whether sleeping should clear the weather or not
 clearWeather: false
 
-# Creates a list from which the plugin will randomly choose a message
-sleepMessages:
-  - §e%s §fwent to bed. Sleep well.
-  - §e%s §fhad a long day. Good night.
-
 # The amount of players in percent that need to sleep in order to skip the night.
 # For example 0.5 would be 50%, which means at least 5 players need to sleep.
 # Minimum is 0, means a single player can skip, maximum is 1, means every player needs to sleep.
 playerCount: 0.5
+
+# The following variables allow you to customize the bossbar which will display general information.
+# This is used in order to not spam the chat with unnecessary messages.
+# Available colors are: PINK, BLUE, RED, GREEN, YELLOW, PURPLE and WHITE
+# The waiting part of the bossbar uses two %s arguments.
+# The first is displaying the count of the sleeping players, the second of the needed players.
+# Both %s arguments are REQUIRED!
+bossbars:
+  waiting:
+    text: Waiting for players | %s/%s
+    color: RED
+  sleeping:
+    text: Sleeping ...
+    color: BLUE
+  morning:
+    text: Good morning!
+    color: GREEN
+
+# As we really don't want to spam the chat with unnecessary messages we're using the actionbar to display
+# bed-leave and bed-join events. You can customize these messages.
+actionbars:
+  enter: "&e%s &fis now sleeping"
+  leave: "&e%s &fstopped sleeping"
+
+# If the server gets reloaded the plugin needs to kick every player out of their beds.
+# You can customize the message which will be displayed then.
+reloadMessage: "The server forced you to leave the bed."
